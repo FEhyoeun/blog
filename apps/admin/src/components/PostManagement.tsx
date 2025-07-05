@@ -1,77 +1,94 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MDEditor from "@uiw/react-md-editor";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
+import supabaseClient from "@/supabase";
 
-interface Post {
-  id: number;
-  title: string;
-  content: string;
-  tags: string[];
-  status: "published" | "draft";
-  createdAt: string;
-  views: number;
-}
+import { Post } from "@shared/shared/types/post";
+import { useAuth } from "@shared/admin-auth/src/AuthContext";
+import { parseDatetimeToFormat } from "@shared/shared/utils/dateUtils";
 
 function PostManagement() {
-  const [posts, _] = useState<Post[]>([
-    {
-      id: 1,
-      title: "React 18 새 기능 소개",
-      content:
-        "# React 18 새 기능\n\nReact 18에서 추가된 새로운 기능들을 소개합니다.",
-      tags: ["React", "Frontend", "JavaScript"],
-      status: "published",
-      createdAt: "2024-01-15",
-      views: 234,
-    },
-    {
-      id: 2,
-      title: "Next.js 최적화 가이드",
-      content:
-        "# Next.js 최적화\n\n웹 애플리케이션 성능을 향상시키는 방법들을 다룹니다.",
-      tags: ["Next.js", "Performance", "Web"],
-      status: "published",
-      createdAt: "2024-01-10",
-      views: 189,
-    },
-    {
-      id: 3,
-      title: "TypeScript 활용법",
-      content: "# TypeScript 기초\n\n타입스크립트 기본 활용법을 알아봅시다.",
-      tags: ["TypeScript", "Programming"],
-      status: "draft",
-      createdAt: "2024-01-08",
-      views: 0,
-    },
-  ]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const [showNewPostForm, setShowNewPostForm] = useState(false);
-  const [newPost, setNewPost] = useState<{
-    title: string;
-    content: string;
-    tags: string[];
-    status: "draft" | "published";
-  }>({
+  const getDefaultNewPost = (): Partial<Post> => ({
     title: "",
     content: "",
     tags: [],
     status: "draft",
   });
+
+  const [newPost, setNewPost] = useState<Partial<Post>>(getDefaultNewPost());
+
+  const { user } = useAuth();
+
+  const fetchPosts = async () => {
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabaseClient
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error(error.message);
+        return;
+      }
+
+      if (data) setPosts(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const handleCreatePost = async () => {
+    setLoading(true);
+
+    setShowNewPostForm(false);
+
+    try {
+      const { error } = await supabaseClient.from("posts").insert([
+        {
+          title: newPost.title,
+          content: newPost.content,
+          tags: newPost.tags,
+          status: newPost.status,
+          author_id: user && user.id,
+        },
+      ]);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setNewPost(getDefaultNewPost());
+      setTagInput("");
+      await fetchPosts();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const [showNewPostForm, setShowNewPostForm] = useState(false);
+
   const [tagInput, setTagInput] = useState("");
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [showEditor, setShowEditor] = useState(false);
 
-  const handleCreatePost = () => {
-    console.log("새 포스트:", newPost);
-    setShowNewPostForm(false);
-    setNewPost({ title: "", content: "", tags: [], status: "draft" });
-    setTagInput("");
-  };
-
-  const handleEditPost = (post: Post) => {
+  const handleEditPostForm = (post: Post) => {
     setEditingPost(post);
     setNewPost({
       title: post.title,
@@ -79,53 +96,106 @@ function PostManagement() {
       tags: post.tags,
       status: post.status,
     });
-    setTagInput(post.tags.join(", "));
+
+    if (post.tags) setTagInput(post.tags.join(", "));
     setShowEditor(true);
   };
 
-  const handleUpdatePost = () => {
-    console.log("포스트 업데이트:", { ...editingPost, ...newPost });
-    setEditingPost(null);
-    setShowEditor(false);
-    setNewPost({ title: "", content: "", tags: [], status: "draft" });
-    setTagInput("");
+  const handleUpdatePost = async () => {
+    setLoading(true);
+
+    try {
+      const { error } = await supabaseClient
+        .from("posts")
+        .update({
+          title: newPost.title,
+          content: newPost.content,
+          tags: newPost.tags,
+          status: newPost.status,
+        })
+        .eq("id", editingPost?.id);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setEditingPost(null);
+      setShowEditor(false);
+      setNewPost(getDefaultNewPost());
+      setTagInput("");
+      await fetchPosts();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddTag = () => {
-    if (tagInput.trim()) {
-      const newTags = tagInput
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag && !newPost.tags.includes(tag));
-      setNewPost({ ...newPost, tags: [...newPost.tags, ...newTags] });
-      setTagInput("");
-    }
+    if (!tagInput.trim()) return;
+
+    const inputTags = tagInput
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag);
+
+    setNewPost({ ...newPost, tags: inputTags });
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
     setNewPost({
       ...newPost,
-      tags: newPost.tags.filter((tag) => tag !== tagToRemove),
+      tags: newPost.tags && newPost.tags.filter((tag) => tag !== tagToRemove),
     });
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddTag();
+  const handleRemovePost = async (post: Post) => {
+    if (!confirm("정말 삭제하시겠습니까?")) return;
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabaseClient
+        .from("posts")
+        .delete()
+        .eq("id", post.id);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      await fetchPosts();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter") return;
+
+    e.preventDefault();
+    handleAddTag();
+  };
+
+  if (loading) return <p>loading...</p>;
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <h2 className="text-2xl font-bold text-slate-700">포스팅 관리</h2>
-        <button
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md transition-colors"
-          onClick={() => setShowNewPostForm(true)}
-        >
-          새 포스트 작성
-        </button>
+        {showNewPostForm ||
+          (!showEditor && (
+            <button
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md transition-colors"
+              onClick={() => setShowNewPostForm(true)}
+            >
+              새 포스트 작성
+            </button>
+          ))}
       </div>
 
       {(showNewPostForm || showEditor) && (
@@ -147,20 +217,21 @@ function PostManagement() {
               태그
             </label>
             <div className="flex flex-wrap gap-2 mb-2">
-              {newPost.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
-                >
-                  {tag}
-                  <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className="text-blue-600 hover:text-blue-800"
+              {newPost.tags &&
+                newPost.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
                   >
-                    ×
-                  </button>
-                </span>
-              ))}
+                    {tag}
+                    <button
+                      onClick={() => handleRemoveTag(tag)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
             </div>
             <div className="flex gap-2">
               <input
@@ -187,7 +258,7 @@ function PostManagement() {
               </label>
               <MDEditor
                 value={newPost.content}
-                onChange={(value) =>
+                onChange={(value: string | undefined) =>
                   setNewPost({ ...newPost, content: value || "" })
                 }
                 preview="edit"
@@ -234,12 +305,7 @@ function PostManagement() {
                 setShowNewPostForm(false);
                 setShowEditor(false);
                 setEditingPost(null);
-                setNewPost({
-                  title: "",
-                  content: "",
-                  tags: [],
-                  status: "draft",
-                });
+                setNewPost(getDefaultNewPost());
                 setTagInput("");
               }}
               className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors"
@@ -281,14 +347,15 @@ function PostManagement() {
                   <td className="px-4 py-3">{post.title}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
-                      {post.tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                      {post.tags &&
+                        post.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
+                          >
+                            {tag}
+                          </span>
+                        ))}
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -302,16 +369,21 @@ function PostManagement() {
                       {post.status === "published" ? "발행됨" : "임시저장"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{post.createdAt}</td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {parseDatetimeToFormat(post.updated_at || post.created_at)}
+                  </td>
                   <td className="px-4 py-3 text-gray-600">{post.views}</td>
                   <td className="px-4 py-3">
                     <button
-                      onClick={() => handleEditPost(post)}
+                      onClick={() => handleEditPostForm(post)}
                       className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs mr-2 transition-colors"
                     >
                       수정
                     </button>
-                    <button className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors">
+                    <button
+                      onClick={() => handleRemovePost(post)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                    >
                       삭제
                     </button>
                   </td>
