@@ -1,3 +1,5 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import { useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./index.css";
@@ -11,6 +13,8 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { AuthProvider, useAuth } from "@shared/admin-auth/src/AuthContext";
 
 type TabType = "dashboard" | "posts" | "analytics";
+
+const queryClient = new QueryClient();
 
 function AdminContent() {
   const [activeTab, setActiveTab] = useState<TabType>("dashboard");
@@ -90,16 +94,18 @@ function AdminContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<AdminContent />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<AdminContent />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
