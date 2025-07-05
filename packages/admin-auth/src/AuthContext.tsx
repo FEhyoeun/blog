@@ -1,40 +1,34 @@
-import { createContext, ReactNode, useContext, useState } from "react";
-
-type AdminUser = {
-  email: string;
-  password: string;
-};
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { User } from "@supabase/supabase-js";
+import supabaseClient from "admin/src/supabase";
 
 type AuthContextValue = {
-  user: AdminUser | null;
+  user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  refresh: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<AdminUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const TOKEN_KEY = "admin_token";
-
   const fetchUser = async () => {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
+    setLoading(true);
 
     try {
-      setUser(JSON.parse(token));
+      const { data } = await supabaseClient.auth.getUser();
+      setUser(data.user);
     } catch (err) {
       console.error(err);
-      localStorage.removeItem(TOKEN_KEY);
-      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -44,8 +38,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
 
     try {
-      localStorage.setItem(TOKEN_KEY, JSON.stringify({ email, password }));
-      setUser({ email, password });
+      const { data } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password,
+      });
+      setUser(data.user);
     } catch (err) {
       console.error(err);
     } finally {
@@ -54,21 +51,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    localStorage.removeItem(TOKEN_KEY);
-    setUser(null);
+    setLoading(true);
+
+    try {
+      await supabaseClient.auth.signOut();
+      setUser(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const refresh = async () => {
-    setLoading(true);
-    await fetchUser();
-  };
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const value: AuthContextValue = {
     user,
     loading,
     login,
     logout,
-    refresh,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
