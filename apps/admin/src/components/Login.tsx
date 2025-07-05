@@ -1,37 +1,41 @@
 import { FormEvent, useState } from "react";
 import { useAuth } from "@shared/admin-auth/src/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
-interface LoginProps {
-  onLogin?: (username: string, password: string) => boolean;
-}
-
-function Login({ onLogin }: LoginProps) {
-  const [username, setUsername] = useState("");
+function Login() {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login, user } = useAuth();
 
-  // 이미 로그인되어 있으면 메인 페이지로 리다이렉트
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
+  const navigate = useNavigate();
+  const { login, loading, user } = useAuth();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
+
     setIsLoading(true);
+    setError("");
 
     try {
-      // AuthContext의 login 함수 사용
-      await login(username, password);
+      await login(email, password);
+      navigate("/");
     } catch (err) {
+      console.error(err);
       setError("아이디 또는 비밀번호가 잘못되었습니다.");
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  // 이미 로그인되어 있으면 메인 페이지로 리다이렉트
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -71,8 +75,8 @@ function Login({ onLogin }: LoginProps) {
                 required
                 className="relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="아이디"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
               />
             </div>
@@ -151,12 +155,6 @@ function Login({ onLogin }: LoginProps) {
                 "로그인"
               )}
             </button>
-          </div>
-
-          <div className="text-center">
-            <p className="text-xs text-gray-500">
-              개발용 계정: admin / password123
-            </p>
           </div>
         </form>
       </div>
