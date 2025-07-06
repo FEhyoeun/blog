@@ -34,10 +34,10 @@ export default function Home() {
           </p>
           <div className="flex justify-center gap-4">
             <a
-              href="/blog"
+              href="/posts"
               className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
             >
-              블로그 보기
+              포스트 보기
             </a>
             <a
               href="/projects"

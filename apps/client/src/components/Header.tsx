@@ -11,10 +11,10 @@ export default function Header() {
 
           <div className="flex items-center space-x-8">
             <Link
-              href="/blog"
+              href="/posts"
               className="text-gray-700 hover:text-gray-900 transition-colors"
             >
-              Blog
+              Posts
             </Link>
             <Link
               href="/projects"
