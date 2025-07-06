@@ -5,6 +5,7 @@ import supabaseClient from '@/supabase';
 import { Post } from '@shared/shared/types/post';
 import { parseDatetimeToFormat } from '@shared/shared/utils/dateUtils';
 import Link from 'next/link';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 export default function BlogPage() {
   const fetchPosts = async (): Promise<Post[]> => {
@@ -27,6 +28,54 @@ export default function BlogPage() {
     queryFn: fetchPosts,
   });
 
+  const [keyword, setKeyword] = useState('');
+  const [searchResults, setSearchResults] = useState<Post[]>([]);
+
+  const displayPosts = keyword.trim() ? searchResults : posts;
+
+  const fetchIncludingPosts = async (
+    searchKeyword: string
+  ): Promise<Post[]> => {
+    const { data, error } = await supabaseClient
+      .from('posts')
+      .select('*')
+      .eq('status', 'published')
+      .or(`title.ilike.%${searchKeyword}%, content.ilike.%${searchKeyword}%`)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  };
+
+  const executeSearch = async (searchKeyword: string) => {
+    try {
+      const results = await fetchIncludingPosts(searchKeyword);
+      setSearchResults(results);
+    } catch (error) {
+      console.error(error);
+      setSearchResults([]);
+    }
+  };
+
+  useEffect(() => {
+    const timeoutId = setTimeout(async () => {
+      if (keyword.trim()) {
+        await executeSearch(keyword);
+        return;
+      }
+
+      setSearchResults([]);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [keyword]);
+
+  const handleSearchKeyword = (e: ChangeEvent<HTMLInputElement>) => {
+    const keyword = e.target.value;
+
+    setKeyword(keyword);
+  };
+
   if (isLoading || error) return null;
 
   return (
@@ -39,35 +88,32 @@ export default function BlogPage() {
       </div>
 
       {/* 검색 영역 */}
-      <div className="mb-8">
-        <div className="max-w-md mx-auto">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="제목이나 내용으로 검색..."
-              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      <div className="mb-8 max-w-md mx-auto relative">
+        <input
+          type="text"
+          placeholder="제목이나 내용으로 검색..."
+          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          onChange={e => handleSearchKeyword(e)}
+        />
+        <div className="absolute inset-y-0 right-0 flex items-center pr-3 ">
+          <svg
+            className="w-5 h-5 text-gray-400 cursor-pointer"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
             />
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-              <svg
-                className="w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-          </div>
+          </svg>
         </div>
       </div>
 
       <div className="space-y-6">
-        {posts?.map((post: Post) => (
+        {displayPosts?.map((post: Post) => (
           <Link
             key={post.id}
             href={`/posts/${post.id}`}
@@ -96,7 +142,7 @@ export default function BlogPage() {
         ))}
 
         {/* 포스트가 없을 때 */}
-        {posts?.length === 0 && (
+        {displayPosts?.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">검색 결과가 없습니다.</p>
           </div>
@@ -115,27 +161,41 @@ export default function BlogPage() {
               다음
             </button>
           </div>
-          
+
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-600">
-                총 <span className="font-medium text-gray-900">{posts?.length || 0}</span>개의 포스트 중{' '}
-                <span className="font-medium text-gray-900">1</span>~<span className="font-medium text-gray-900">10</span> 표시
+                총{' '}
+                <span className="font-medium text-gray-900">
+                  {posts?.length || 0}
+                </span>
+                개의 포스트 중{' '}
+                <span className="font-medium text-gray-900">1</span>~
+                <span className="font-medium text-gray-900">10</span> 표시
               </p>
             </div>
-            
+
             <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
               {/* 이전 버튼 */}
-              <button 
+              <button
                 className="relative inline-flex items-center px-3 py-2 text-gray-400 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border-r border-gray-200"
                 disabled={true}
               >
                 <span className="sr-only">이전</span>
-                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </button>
-              
+
               {/* 페이지 번호 */}
               <button className="relative inline-flex items-center bg-gray-700 px-4 py-2 text-sm font-medium text-white border-r border-gray-200">
                 1
@@ -158,12 +218,21 @@ export default function BlogPage() {
               <button className="relative inline-flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-r border-gray-200">
                 10
               </button>
-              
+
               {/* 다음 버튼 */}
               <button className="relative inline-flex items-center px-3 py-2 text-gray-400 hover:bg-gray-50 transition-colors">
                 <span className="sr-only">다음</span>
-                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </button>
             </div>
