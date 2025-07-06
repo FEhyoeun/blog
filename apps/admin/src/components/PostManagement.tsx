@@ -258,9 +258,11 @@ function PostManagement() {
               </label>
               <MDEditor
                 value={newPost.content}
-                onChange={(value: string | undefined) =>
-                  setNewPost({ ...newPost, content: value || "" })
-                }
+                onChange={(value: string | undefined) => {
+                  const cleanValue = value?.replace(/\u001c/g, "") || ""; // 특수 문자 제거
+
+                  setNewPost({ ...newPost, content: cleanValue });
+                }}
                 preview="edit"
                 height={400}
                 data-color-mode="light"
@@ -271,7 +273,7 @@ function PostManagement() {
                 미리보기
               </label>
               <div className="border border-gray-300 rounded-md p-4 h-96 overflow-y-auto bg-gray-50">
-                <div className="prose prose-sm max-w-none">
+                <div className="prose prose-sm max-w-none markdown-content">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {newPost.content || "*미리보기가 여기에 표시됩니다*"}
                   </ReactMarkdown>

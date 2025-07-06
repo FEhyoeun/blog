@@ -6,6 +6,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { parseDatetimeToFormat } from '@shared/shared/utils/dateUtils';
 import Link from 'next/link';
 import React, { useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -92,6 +94,7 @@ export default function BlogDetailPage({ params }: Props) {
 
   if (!post) return null;
 
+  console.log(post.content);
   return (
     <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* 뒤로가기 버튼 */}
@@ -146,10 +149,10 @@ export default function BlogDetailPage({ params }: Props) {
       </header>
 
       {/* 포스트 내용 */}
-      <div className="prose prose-lg max-w-none">
-        <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+      <div className="prose prose-lg max-w-none markdown-content">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {post.content}
-        </div>
+        </ReactMarkdown>
       </div>
 
       {/* 푸터 */}
