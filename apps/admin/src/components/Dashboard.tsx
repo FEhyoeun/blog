@@ -1,11 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import supabaseClient from "@/supabase";
-
-import { useState } from "react";
 import { Post } from "@shared/shared/types/post";
+import { parseDatetimeToFormat } from "@shared/shared/utils/dateUtils";
+
+type RecentPost = Pick<Post, "id" | "title" | "created_at" | "status">;
 
 function Dashboard() {
-  const [recentPosts, setRecentPosts] = useState<Post[]>([]);
+  const fetchRecentPosts = async (): Promise<RecentPost[]> => {
+    const { data, error } = await supabaseClient
+      .from("posts")
+      .select("id, title, created_at, status")
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (error) throw error;
+    return data || [];
+  };
+
+  const { data: recentPosts } = useQuery<RecentPost[]>({
+    queryKey: ["recent-posts"],
+    queryFn: fetchRecentPosts,
+    initialData: [],
+  });
 
   const fetchStats = async () => {
     const { count: totalPosts } = await supabaseClient
@@ -14,7 +31,7 @@ function Dashboard() {
 
     return {
       totalPosts,
-      // mock 데이터
+      // Todo mock 데이터
       todayVisitors: 0,
       weeklyVisitors: 0,
       totalVisitors: 0,
@@ -24,6 +41,12 @@ function Dashboard() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: fetchStats,
+    initialData: {
+      totalPosts: 0,
+      todayVisitors: 0,
+      weeklyVisitors: 0,
+      totalVisitors: 0,
+    },
   });
 
   if (isLoading) {
@@ -61,14 +84,23 @@ function Dashboard() {
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow-sm">
-        <h3 className="text-lg font-semibold text-slate-700 mb-4">최근 활동</h3>
-        <ul className="space-y-3">
-          {recentPosts.map((post: Post) => (
+        <h3 className="text-lg font-semibold text-slate-700 mb-4">
+          최근 발행된 포스트
+        </h3>
+        <ul className="space-y-2">
+          {recentPosts.map((post: RecentPost) => (
             <li
               key={post.id}
-              className="py-2 border-b border-gray-100 last:border-b-0"
+              className="py-3 border-b border-gray-200 last:border-b-0"
             >
-              {post.title}
+              <div className="flex justify-between items-center">
+                <h4 className="font-medium text-slate-700 truncate pr-4">
+                  {post.title}
+                </h4>
+                <span className="text-sm text-gray-500 whitespace-nowrap">
+                  {parseDatetimeToFormat(post.created_at)}
+                </span>
+              </div>
             </li>
           ))}
         </ul>
