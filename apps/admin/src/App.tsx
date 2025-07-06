@@ -81,7 +81,7 @@ function AdminContent() {
             }`}
             onClick={() => setActiveTab("analytics")}
           >
-            방문자 데이터
+            데이터 관리
           </button>
         </div>
       </nav>
