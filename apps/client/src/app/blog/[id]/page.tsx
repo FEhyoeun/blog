@@ -2,10 +2,10 @@
 
 import { Post } from '@shared/shared/types/post';
 import supabaseClient from '@/supabase';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { parseDatetimeToFormat } from '@shared/shared/utils/dateUtils';
 import Link from 'next/link';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -13,6 +13,8 @@ interface Props {
 
 export default function BlogDetailPage({ params }: Props) {
   const { id } = React.use(params);
+  const queryClient = useQueryClient();
+  const hasIncrementRef = useRef(false);
 
   const fetchPostDetail = async (): Promise<Post> => {
     const { data, error } = await supabaseClient
@@ -33,6 +35,26 @@ export default function BlogDetailPage({ params }: Props) {
     queryKey: ['post', id],
     queryFn: fetchPostDetail,
   });
+
+  const incrementViewsMutation = useMutation({
+    mutationFn: async (postId: string) => {
+      const { error } = await supabaseClient.rpc('increment_post_views', {
+        p_post_id: parseInt(postId),
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['post', id] });
+    },
+  });
+
+  useEffect(() => {
+    if (!post || hasIncrementRef.current) return;
+
+    incrementViewsMutation.mutate(id);
+    hasIncrementRef.current = true;
+  }, [id]);
 
   if (isLoading) {
     return (
