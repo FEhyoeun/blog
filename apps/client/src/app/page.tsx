@@ -40,10 +40,10 @@ export default function Home() {
               포스트 보기
             </a>
             <a
-              href="/projects"
+              href="/activities"
               className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              프로젝트 보기
+              활동 보기
             </a>
           </div>
         </div>
