@@ -7,16 +7,45 @@ import { parseDatetimeToFormat } from '@shared/shared/utils/dateUtils';
 import Link from 'next/link';
 import { ChangeEvent, useEffect, useState } from 'react';
 
+interface PaginationResponse<T> {
+  data: T[];
+  totalCount: number;
+  totalPages: number;
+}
+
+const PAGE = 10;
+
 export default function BlogPage() {
-  const fetchPosts = async (): Promise<Post[]> => {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [keyword, setKeyword] = useState('');
+  const [searchResults, setSearchResults] = useState<Post[]>([]);
+  const [searchCount, setSearchCount] = useState(0);
+
+  const fetchPosts = async (
+    page: number
+  ): Promise<PaginationResponse<Post>> => {
+    const startPage = (page - 1) * PAGE;
+    const endPage = startPage + PAGE - 1;
+
+    const { count } = await supabaseClient
+      .from('posts')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'published');
+
     const { data, error } = await supabaseClient
       .from('posts')
       .select('*')
       .eq('status', 'published')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(startPage, endPage);
 
     if (error) throw error;
-    return data || [];
+    return {
+      data: data || [],
+      totalCount: count || 0,
+      totalPages: Math.ceil((count || 0) / PAGE),
+    };
   };
 
   const {
@@ -24,38 +53,59 @@ export default function BlogPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['posts'],
-    queryFn: fetchPosts,
+    queryKey: ['posts', currentPage],
+    queryFn: () => fetchPosts(currentPage),
   });
 
-  const [keyword, setKeyword] = useState('');
-  const [searchResults, setSearchResults] = useState<Post[]>([]);
-
-  const displayPosts = keyword.trim() ? searchResults : posts;
-
+  // 검색 포스팅 검색
   const fetchIncludingPosts = async (
-    searchKeyword: string
-  ): Promise<Post[]> => {
+    searchKeyword: string,
+    page: number = 1
+  ): Promise<PaginationResponse<Post>> => {
+    const startPage = (page - 1) * PAGE;
+    const endPage = startPage + PAGE - 1;
+
+    const { count } = await supabaseClient
+      .from('posts')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'published')
+      .or(`title.ilike.%${searchKeyword}%, content.ilike.%${searchKeyword}%`);
+
     const { data, error } = await supabaseClient
       .from('posts')
       .select('*')
       .eq('status', 'published')
       .or(`title.ilike.%${searchKeyword}%, content.ilike.%${searchKeyword}%`)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(startPage, endPage);
 
     if (error) throw error;
-    return data || [];
+    return {
+      data: data || [],
+      totalCount: count || 0,
+      totalPages: Math.ceil((count || 0) / PAGE),
+    };
   };
 
   const executeSearch = async (searchKeyword: string) => {
     try {
-      const results = await fetchIncludingPosts(searchKeyword);
+      setCurrentPage(1);
+
+      const { data: results, totalCount } =
+        await fetchIncludingPosts(searchKeyword);
       setSearchResults(results);
+      setSearchCount(totalCount);
     } catch (error) {
       console.error(error);
       setSearchResults([]);
+      setSearchCount(0);
     }
   };
+
+  const displayPosts = keyword.trim() ? searchResults : posts?.data || [];
+  const totalPages = keyword.trim()
+    ? Math.ceil(searchCount / PAGE)
+    : posts?.totalPages || 0;
 
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
@@ -70,10 +120,33 @@ export default function BlogPage() {
     return () => clearTimeout(timeoutId);
   }, [keyword]);
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSearchKeyword = (e: ChangeEvent<HTMLInputElement>) => {
     const keyword = e.target.value;
-
     setKeyword(keyword);
+  };
+
+  const generatePageNumbers = (currentPage: number, totalPage: number) => {
+    const pages = [];
+    const COUNT_PER_PAGE = 5;
+
+    let start = Math.max(1, currentPage - 2);
+    const end = Math.min(totalPage, start + COUNT_PER_PAGE - 1);
+
+    // 끝이 5개가 안 될 때
+    if (end - start < COUNT_PER_PAGE - 1) {
+      start = Math.max(1, end - COUNT_PER_PAGE + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
   };
 
   if (isLoading || error) return null;
@@ -167,19 +240,16 @@ export default function BlogPage() {
               <p className="text-sm text-gray-600">
                 총{' '}
                 <span className="font-medium text-gray-900">
-                  {posts?.length || 0}
+                  {posts?.totalCount}
                 </span>
-                개의 포스트 중{' '}
-                <span className="font-medium text-gray-900">1</span>~
-                <span className="font-medium text-gray-900">10</span> 표시
+                개의 포스트
               </p>
             </div>
 
             <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-              {/* 이전 버튼 */}
               <button
                 className="relative inline-flex items-center px-3 py-2 text-gray-400 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border-r border-gray-200"
-                disabled={true}
+                disabled={currentPage <= 1}
               >
                 <span className="sr-only">이전</span>
                 <svg
@@ -196,31 +266,20 @@ export default function BlogPage() {
                 </svg>
               </button>
 
-              {/* 페이지 번호 */}
-              <button className="relative inline-flex items-center bg-gray-700 px-4 py-2 text-sm font-medium text-white border-r border-gray-200">
-                1
-              </button>
-              <button className="relative inline-flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-r border-gray-200">
-                2
-              </button>
-              <button className="relative inline-flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-r border-gray-200">
-                3
-              </button>
-              <span className="relative inline-flex items-center px-4 py-2 text-sm text-gray-500 border-r border-gray-200">
-                ...
-              </span>
-              <button className="relative inline-flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-r border-gray-200">
-                8
-              </button>
-              <button className="relative inline-flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-r border-gray-200">
-                9
-              </button>
-              <button className="relative inline-flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-r border-gray-200">
-                10
-              </button>
+              {generatePageNumbers(currentPage, totalPages).map(pageNumber => (
+                <button
+                  key={pageNumber}
+                  onClick={() => handlePageChange(pageNumber)}
+                  className={`relative inline-flex items-center px-4 py-2 text-sm font-medium border-r border-gray-200 ${currentPage === pageNumber ? 'bg-gray-700 text-white' : 'text-gray-700 hover:bg-gray-50 transition-colors'}`}
+                >
+                  {pageNumber}
+                </button>
+              ))}
 
-              {/* 다음 버튼 */}
-              <button className="relative inline-flex items-center px-3 py-2 text-gray-400 hover:bg-gray-50 transition-colors">
+              <button
+                className="relative inline-flex items-center px-3 py-2 text-gray-400 hover:bg-gray-50 transition-colors"
+                disabled={currentPage >= totalPages}
+              >
                 <span className="sr-only">다음</span>
                 <svg
                   className="h-4 w-4"
