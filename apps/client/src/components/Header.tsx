@@ -11,22 +11,22 @@ export default function Header() {
 
           <div className="flex items-center space-x-8">
             <Link
+              href="/about"
+              className="text-gray-700 hover:text-gray-900 transition-colors"
+            >
+              About
+            </Link>
+            <Link
               href="/posts"
               className="text-gray-700 hover:text-gray-900 transition-colors"
             >
               Posts
             </Link>
             <Link
-              href="/projects"
+              href="/activities"
               className="text-gray-700 hover:text-gray-900 transition-colors"
             >
-              Projects
-            </Link>
-            <Link
-              href="/about"
-              className="text-gray-700 hover:text-gray-900 transition-colors"
-            >
-              About
+              Activities
             </Link>
           </div>
         </div>
