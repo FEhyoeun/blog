@@ -1,17 +1,32 @@
 export default function Home() {
-  const skills = [
+  const technicalSkills = [
     'React',
-    'Next.js',
     'TypeScript',
+    'Next.js',
     'JavaScript',
+    'Vue',
+    'Nuxt',
+    'Redux Toolkit',
+    'Vuex',
+    'Pinia',
     'HTML/CSS',
+    'SCSS',
+    'Styled-components',
     'Tailwind CSS',
-    'Node.js',
+    'Webpack',
+    'Vite',
+    'Jest',
     'Git',
-    'Figma',
-    'Responsive Design',
-    'REST API',
-    'GraphQL',
+  ];
+
+  const softSkills = [
+    '코드 리뷰',
+    '문서화',
+    '팀 협업 프로세스 정립',
+    '프로세스 개선',
+    '문제 해결',
+    '커뮤니케이션',
+    '애자일/스크럼',
   ];
 
   return (
@@ -54,15 +69,39 @@ export default function Home() {
         <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
           Skills & Technologies
         </h2>
-        <div className="flex flex-wrap justify-center gap-3">
-          {skills.map(skill => (
-            <span
-              key={skill}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors"
-            >
-              {skill}
-            </span>
-          ))}
+
+        {/* Technical Skills */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+            Technical Skills
+          </h3>
+          <div className="flex flex-wrap justify-center gap-3">
+            {technicalSkills.map(skill => (
+              <span
+                key={skill}
+                className="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium hover:bg-blue-200 transition-colors"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Soft Skills */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+            Soft Skills
+          </h3>
+          <div className="flex flex-wrap justify-center gap-3">
+            {softSkills.map(skill => (
+              <span
+                key={skill}
+                className="px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium hover:bg-green-200 transition-colors"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
     </div>
