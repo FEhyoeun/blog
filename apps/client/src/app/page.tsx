@@ -49,10 +49,10 @@ export default function Home() {
           </p>
           <div className="flex justify-center gap-4">
             <a
-              href="/posts"
+              href="/about"
               className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
             >
-              포스트 보기
+              Tech Stack & Career
             </a>
             <a
               href="/activities"
