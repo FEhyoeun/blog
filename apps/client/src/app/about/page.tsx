@@ -86,6 +86,57 @@ export default function AboutPage() {
           </ExperienceCard>
         </section>
 
+        {/* Education */}
+        <section>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">학력</h2>
+          <div className="space-y-4">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    컴퓨터과학과
+                  </h3>
+                  <p className="text-gray-600">한국방송통신대학교</p>
+                </div>
+                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  2025.03 - 2027.02 (예정)
+                </span>
+              </div>
+              <p className="text-gray-600">졸업 예정</p>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    SW 응용소프트웨어 과정
+                  </h3>
+                  <p className="text-gray-600">교육과정</p>
+                </div>
+                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  2020.03 - 2020.09
+                </span>
+              </div>
+              <p className="text-gray-600">과정 이수</p>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    심리학과
+                  </h3>
+                  <p className="text-gray-600">영남대학교</p>
+                </div>
+                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  2011.03 - 2015.08
+                </span>
+              </div>
+              <p className="text-gray-600">학사 졸업</p>
+            </div>
+          </div>
+        </section>
+
         {/* Contact */}
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-6">연락처</h2>
