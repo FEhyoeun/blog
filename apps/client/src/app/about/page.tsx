@@ -18,8 +18,11 @@ export default function AboutPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">소개</h2>
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             {personalInfo.introduction.map((line, index) => (
-              <p key={index} className={`text-gray-600 ${line === '' ? 'mb-4' : ''}`}>
-                {line}
+              <p
+                key={index}
+                className={`text-gray-600 ${line === '' ? 'mb-4' : ''}`}
+              >
+                {line || ''}
               </p>
             ))}
           </div>
@@ -50,7 +53,10 @@ export default function AboutPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">학력</h2>
           <div className="space-y-4">
             {education.map((edu, index) => (
-              <div key={index} className="bg-white border border-gray-200 rounded-lg p-6">
+              <div
+                key={index}
+                className="bg-white border border-gray-200 rounded-lg p-6"
+              >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
@@ -72,16 +78,14 @@ export default function AboutPage() {
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-6">연락처</h2>
           <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <p className="text-gray-600 mb-4">
-              {contact.description}
-            </p>
+            <p className="text-gray-600 mb-4">{contact.description}</p>
             <div className="flex flex-wrap gap-4">
               {contact.links.map((link, index) => (
                 <Link
                   key={index}
                   href={link.url}
-                  target={link.external ? "_blank" : undefined}
-                  rel={link.external ? "noopener noreferrer" : undefined}
+                  target={link.external ? '_blank' : undefined}
+                  rel={link.external ? 'noopener noreferrer' : undefined}
                   className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   {link.label}
