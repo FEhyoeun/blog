@@ -44,8 +44,8 @@ export default function Home() {
             사용자 중심의 웹 애플리케이션을 만드는 Frontend Developer입니다.
           </p>
           <p className="text-lg text-gray-500 mb-6 max-w-2xl mx-auto">
-            Hello, I'm Hyoeun, a Frontend Developer who creates user-centered
-            web applications.
+            {`Hello, I'm Hyoeun, a Frontend Developer who creates user-centered
+            web applications.`}
           </p>
           <div className="flex justify-center gap-4">
             <a
