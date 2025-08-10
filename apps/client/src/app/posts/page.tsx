@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import supabaseClient from '@/supabase';
+import getSupabaseClient from '@/supabase';
 import { Post } from '@shared/shared/types/post';
 import { parseDatetimeToFormat } from '@shared/shared/utils/dateUtils';
 import Link from 'next/link';
@@ -28,12 +28,12 @@ export default function BlogPage() {
     const startPage = (page - 1) * PAGE;
     const endPage = startPage + PAGE - 1;
 
-    const { count } = await supabaseClient
+    const { count } = await getSupabaseClient()
       .from('posts')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'published');
 
-    const { data, error } = await supabaseClient
+    const { data, error } = await getSupabaseClient()
       .from('posts')
       .select('*')
       .eq('status', 'published')
@@ -65,13 +65,13 @@ export default function BlogPage() {
     const startPage = (page - 1) * PAGE;
     const endPage = startPage + PAGE - 1;
 
-    const { count } = await supabaseClient
+    const { count } = await getSupabaseClient()
       .from('posts')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'published')
       .or(`title.ilike.%${searchKeyword}%, content.ilike.%${searchKeyword}%`);
 
-    const { data, error } = await supabaseClient
+    const { data, error } = await getSupabaseClient()
       .from('posts')
       .select('*')
       .eq('status', 'published')

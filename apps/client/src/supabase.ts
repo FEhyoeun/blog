@@ -12,4 +12,4 @@ export const getSupabaseClient = () => {
   return supabaseClient;
 };
 
-export default getSupabaseClient();
+export default getSupabaseClient;

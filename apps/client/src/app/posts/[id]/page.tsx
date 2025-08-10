@@ -1,7 +1,7 @@
 'use client';
 
 import { Post } from '@shared/shared/types/post';
-import supabaseClient from '@/supabase';
+import getSupabaseClient from '@/supabase';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { parseDatetimeToFormat } from '@shared/shared/utils/dateUtils';
 import Link from 'next/link';
@@ -19,7 +19,7 @@ export default function BlogDetailPage({ params }: Props) {
   const hasIncrementRef = useRef(false);
 
   const fetchPostDetail = async (): Promise<Post> => {
-    const { data, error } = await supabaseClient
+    const { data, error } = await getSupabaseClient()
       .from('posts')
       .select('*')
       .eq('id', id)
@@ -40,7 +40,7 @@ export default function BlogDetailPage({ params }: Props) {
 
   const incrementViewsMutation = useMutation({
     mutationFn: async (postId: string) => {
-      const { error } = await supabaseClient.rpc('increment_post_views', {
+      const { error } = await getSupabaseClient().rpc('increment_post_views', {
         p_post_id: parseInt(postId),
       });
 
