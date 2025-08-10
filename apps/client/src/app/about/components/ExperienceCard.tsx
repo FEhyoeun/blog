@@ -1,11 +1,9 @@
-import { ReactNode } from 'react';
-
 interface ExperienceCardProps {
   role: string;
   companyName: string;
-  startDate: string; // YYYY-MM
-  endDate: string; // YYYY-MM
-  children: ReactNode;
+  startDate: string;
+  endDate: string;
+  children: React.ReactNode;
 }
 
 export default function ExperienceCard({
@@ -27,7 +25,7 @@ export default function ExperienceCard({
             {startDate} - {endDate}
           </span>
         </div>
-        <>{children}</>
+        <div>{children}</div>
       </div>
     </div>
   );
