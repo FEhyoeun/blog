@@ -2,6 +2,8 @@
 
 > Target Product의 Source of Truth는 `docs/product/product-definition.md`다. Current State는 `docs/reconnaissance/repository-reconnaissance.md`, `docs/engineering/architecture.md`, 필요한 범위에서 확인한 현재 code와 configuration을 근거로 한다. 이 문서는 Requirements, Acceptance Criteria 또는 backlog가 아니다.
 
+> Historical scope note: 이 문서의 Target 표현은 Gap Analysis 작성 당시의 Product Definition을 반영한다. 현재 Initial V1 Target과 완료 조건은 `docs/product/requirements.md`를 우선한다. 특히 Featured Posts와 Home Topics는 Initial V1 범위가 아니며, 아래 `Preview`의 `Satisfied` 평가는 확인된 inline/live Preview에만 해당하고 Full Preview 충족을 의미하지 않는다.
+
 ## Executive Summary
 
 현재 Repository에는 공개 블로그의 기본 정보 화면, 게시글 목록·검색·상세, Markdown rendering, `Draft`/`Published` 상태, 관리자 인증 UI와 게시글 CRUD UI가 구현되어 있다. About과 Activities는 Target Product의 기본 정보 범위를 이미 제공한다.
@@ -30,7 +32,7 @@ Supabase의 실제 schema·RLS·RPC, 인증과 CRUD의 runtime 동작, Draft 직
 | Markdown content | Markdown 기반 단일 content | Admin editor/preview와 public `react-markdown` rendering 존재 | `Satisfied` | 기본 Markdown pipeline은 존재 |
 | Post status | `Draft`, `Published` | type, admin selector, create/update에 두 상태가 존재 | `Satisfied` | 확인된 code-level gap 없음 |
 | Draft isolation | Draft를 URL/API/discovery에서 public 차단 | 목록·검색은 published filter 사용; 상세는 id만 조회; RLS는 미확인 | `Partial` | public detail code에 status 제한이 없고 server-side 차단은 검증 불가 |
-| Preview | Author가 Draft Preview 가능 | Admin editor에 Markdown preview가 있고 기존 draft도 편집 가능 | `Satisfied` | editor 내부 preview implementation 존재 |
+| Preview | Author가 Draft의 inline/live Preview 가능 | Admin editor에 Markdown preview가 있고 기존 draft도 편집 가능 | `Satisfied` | inline/live Preview implementation이 존재함. 현재 REQ-08의 Full Preview는 이 평가 범위에 포함되지 않으며 별도 Gap임 |
 | Publish/Edit | Publish 후 수정·갱신 | Admin에서 status 선택, insert/update UI와 호출 존재 | `Needs Verification` | 실제 Auth/RLS 환경에서 persistence 동작 확인 필요 |
 | Admin CRUD | Single-author Post 생성·수정·삭제 | CRUD UI와 Supabase 호출이 존재 | `Needs Verification` | 실제 계정, 권한, DB 동작이 검증되지 않음 |
 | Topic management | Admin에서 Topic 관리 | comma-separated `tags` 추가·제거만 존재 | `Partial` | Target Topics로서의 관리 contract와 동작이 불충분 |
@@ -196,6 +198,8 @@ Target:
 
 Current:
 Admin은 `draft`/`published`를 선택해 insert/update할 수 있고, Markdown editor 옆에 preview를 표시한다. Existing post를 불러와 수정할 수 있다.
+
+현재 문서 체계에서 이 evidence는 inline/live Preview에 해당한다. 실제 Published Post의 reading experience에 최대한 가까운 Full Preview implementation은 확인되지 않았으며 `BC-08 Full Preview Experience`에서 별도 Gap으로 추적한다.
 
 Status:
 `Needs Verification`
@@ -652,6 +656,8 @@ Activities의 `category`는 활동 콘텐츠를 분류하는 field이며 `Post`�
 ## Inputs for Requirements
 
 다음 confirmed gap은 다음 Requirements / Acceptance Criteria 단계의 입력이다. 여기서는 요구사항 문장이나 Acceptance Criteria로 구체화하지 않는다.
+
+이 목록은 Gap Analysis 작성 당시의 Target 입력을 보존한다. 현재 Initial V1에서는 Featured Posts와 Home Topics를 제외하고 Recent Published Posts 중심 Home만 요구하며, Blog Topic discovery는 계속 Initial V1 범위다.
 
 - Home을 콘텐츠 발견 중심으로 정렬하고 Recent/Featured Posts와 Topics를 다루는 범위
 - `Post`의 Summary/Description, Slug, Cover Image 및 Topics model gap

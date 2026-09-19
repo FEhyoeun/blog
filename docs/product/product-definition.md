@@ -1,6 +1,6 @@
 # Target Product Definition
 
-> 이 문서는 제품의 목표 상태(Target Product)를 정의하는 Product Source of Truth다. 현재 구현 상태는 설명하지 않으며, 구체적인 Design 및 Engineering 방식은 해당 단계의 문서에서 결정한다.
+> 이 문서는 제품의 목표 상태(Target Product)와 Initial V1 Scope를 정의하는 Product Source of Truth다. 현재 구현 상태는 설명하지 않으며, 구체적인 Design 및 Engineering 방식은 해당 단계의 문서에서 결정한다.
 
 ## Product Vision
 
@@ -35,11 +35,12 @@ Harness Engineering Playground는 별도의 Engineering Goal이다. 포트폴리
 ### Home
 
 - Minimal Author Identity
-- Recent / Featured Posts
-- Topics
+- Recent Published Posts
 - 콘텐츠 발견을 위한 Entry Point
 
 Home의 중심은 자기소개가 아니라 콘텐츠다.
+
+Featured Posts와 Home Topics는 Initial V1에 포함하지 않는다. 향후 필요성이 확인되면 확장할 수 있다. 이는 Initial V1의 Blog Topic discovery 범위와 별개다.
 
 ### Blog
 
@@ -87,6 +88,8 @@ Activities는 작성자가 회사 밖에서 무엇을 만들고, 배우고, 공�
 
 Category hierarchy는 사용하지 않는다. Search와 URL-based Pagination을 제공한다.
 
+새 Post의 Slug는 Title을 기반으로 자동 생성하며 한글을 포함한 Unicode를 허용한다. 고유 Slug는 최초 Publish 시 확정하고, 이후 Title 수정만으로 변경하지 않는다. 동일한 Slug가 이미 존재하면 시스템이 고유한 Slug를 생성한다. V1에서는 작성자의 수동 Slug 관리와 Slug 변경을 위한 Redirect 관리를 제공하지 않는다.
+
 Related Posts는 현재 핵심 범위가 아니다. 콘텐츠가 충분히 축적된 후 필요성을 다시 평가한다.
 
 ## Post Lifecycle
@@ -108,6 +111,8 @@ Draft -> Preview -> Publish -> Published -> Edit / Update
 - Public 접근을 허용한다.
 - Public discovery 대상에 포함한다.
 
+Publish하려면 Title, Summary, Content가 비어 있지 않고 유효한 고유 Slug를 생성할 수 있어야 한다. Topics와 작성자가 직접 지정하는 Cover Image는 필수 조건이 아니며, 임의의 최소 글자 수는 정의하지 않는다.
+
 `Archived`는 장기 운영 후 필요성이 확인되면 검토할 Future Candidate다. `Private Post`는 현재 Target Product에 포함하지 않는다.
 
 ## Admin CMS
@@ -120,13 +125,18 @@ Admin은 Single-author CMS다.
 - Post 수정
 - Post 삭제
 - Save Draft
-- Preview
+- Live Preview
+- Full Preview
 - Publish
 - Topic 관리
 
 Editor는 Markdown 기반으로 유지한다. Notion-style Block Editor와 Rich Text Editor는 현재 범위에 포함하지 않는다.
 
-이미지 업로드 방식, slug 생성 방식, autosave 등의 세부 UX 및 implementation은 필요한 경우 이후 Design 또는 Engineering 단계에서 결정한다.
+Save Draft는 작성자의 명시적인 action이며 V1에서는 Autosave를 제공하지 않는다. Preview는 저장과 독립적이고 Preview 자체가 Save Draft 또는 Publish를 발생시키지 않는다. Publish 조건을 만족한 새 Post는 Save Draft 없이 직접 Publish할 수 있다.
+
+Live Preview는 Admin Editor에서 현재 작성 중인 콘텐츠를 보여준다. Full Preview는 실제 Published Post의 reading experience에 최대한 가까운 경험을 제공한다. 두 Preview는 인증된 작성자만 사용할 수 있다.
+
+이미지 업로드 방식과 Preview의 구체적인 UX 및 implementation은 필요한 경우 이후 Design 또는 Engineering 단계에서 결정한다.
 
 ## Discoverability
 
@@ -182,8 +192,11 @@ Post의 Markdown reading experience는 다음 기술 콘텐츠를 자연스럽�
 - List
 - Table
 - Blockquote
+- Heading 구조 기반 Table of Contents
 - 긴 글의 readability
 - Mobile readability
+
+Table of Contents는 Published Post의 Heading 구조를 기반으로 자동 생성한다. 구성할 Heading이 없으면 표시하지 않으며, 글자 수 등의 별도 threshold는 두지 않는다.
 
 Admin은 Desktop 중심으로 최적화하되 기본적인 Responsive 품질을 유지한다.
 
@@ -219,8 +232,14 @@ Public Blog와 Admin CMS의 구체적인 Production deployment topology는 Produ
 
 ## Non-goals / Scope Boundary
 
-현재 Target Product에서는 다음을 의도적으로 만들지 않는다.
+Initial V1에서는 다음을 의도적으로 만들지 않는다.
 
+- Featured Posts
+- Home Topics
+- Newsletter / Post Subscription
+- AI Summary Generation
+- Content Full-text Search
+- Autosave
 - Multi-author
 - Public signup / 일반 사용자 계정
 - 복잡한 Role & Permission 시스템
@@ -229,6 +248,8 @@ Public Blog와 Admin CMS의 구체적인 Production deployment topology는 Produ
 - Scheduled Publish
 - Private Post
 - Archived lifecycle
+- Trash / Revision / Version Management
+- External Shareable Draft Preview
 - 자체 Analytics 시스템 / Analytics Dashboard
 - Category hierarchy
 - 복잡한 Related Post / Recommendation 시스템
@@ -265,8 +286,8 @@ Harness Engineering을 보여주기 위해 불필요한 Product Feature를 추�
 다음 항목은 이 Product Definition에서 결정하지 않는다.
 
 - 이미지 업로드 방식
-- slug 생성 방식
-- autosave UX 및 implementation
+- Slug algorithm, collision suffix 형식, encoding 방식
+- Table of Contents의 heading depth, numbering, 위치, anchor 세부 동작
 - SEO/AEO의 구체적인 기술 구현
 - 구체적인 Lighthouse 목표
 - WCAG level
