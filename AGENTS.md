@@ -10,8 +10,10 @@
 - `apps/admin/`: React/Vite 관리자 application.
 - `packages/shared/`: 공통 Supabase client factory, type, utility.
 - `packages/admin-auth/`: admin application에서 사용하는 Supabase authentication context.
+- `.codex/config.toml`, `.codex/agents/`: Repository 범위의 multi-agent 설정과 전문 Agent 정의.
 - `docs/README.md`: Knowledge Base index와 책임 범위, Context 탐색 규칙.
 - `docs/engineering/architecture.md`: 현재 system architecture와 주요 runtime/data boundary.
+- `docs/engineering/agent-orchestration.md`: Human Lead, Main Orchestrator와 전문 Agent의 책임, handoff, 승인 경계.
 - `docs/reconnaissance/repository-reconnaissance.md`: 특정 시점의 임시 조사 기록. 사용하기 전에 내용을 검증한다.
 - `package.json`, `turbo.json`: workspace script와 task orchestration.
 - 각 application의 `package.json` 및 TypeScript, Next.js, Vite, Tailwind, PostCSS 파일: application별 configuration.
@@ -48,6 +50,18 @@ task에 필요한 Context만 다음 순서로 확인한다.
 4. 관련 implementation과 인접한 caller, consumer, shared type, 그리고 존재하는 경우 test.
 
 `docs/reconnaissance/repository-reconnaissance.md`는 알려진 영역과 Unknown을 찾기 위한 임시 baseline으로만 사용하고, 관련 내용은 다시 검증한다. Conversation context만으로 Source of Truth를 판단하지 않는다. Supabase 관련 작업에서는 client 호출과 shared type을 확인하되, schema, RLS policy, migration, RPC definition은 현재 Repository에 저장되어 있지 않음을 유의한다. 외부 동작은 명시적인 확인이 필요할 수 있다.
+
+## Agent Orchestration
+
+- 사용자는 Human Lead로서 Product 범위, 주요 Product/UX/Architecture 결정과 최종 수락 권한을 가진다.
+- Main Agent는 Orchestrator로서 task를 분해하고 필요한 최소한의 전문 Agent를 선택하며, Context 전달, dependency 조정과 결과 통합을 담당한다.
+- Project-scoped 전문 Agent는 Product Owner, UX Designer, Frontend Engineer, Backend Engineer, QA로 구성하며 실제 정의는 `.codex/agents/`에 둔다.
+- Product 지식은 `docs/product/`, Design 지식은 `docs/design/`, Engineering 지식은 `docs/engineering/`에 유지한다. Agent별 directory에 같은 지식을 복제하지 않는다.
+- 분석이나 review 요청은 기본적으로 read-only다. 파일 변경은 Lead 또는 Orchestrator가 명시적으로 위임한 범위에서만 수행한다.
+- 독립적인 조사와 review는 병렬화할 수 있지만 같은 파일이나 contract를 변경하는 작업은 동시에 수행하지 않는다.
+- 새로운 Product 행동, cross-domain contract, authorization boundary, 외부 환경 또는 파괴적 변경은 Lead 승인 없이 확정하거나 실행하지 않는다.
+- QA는 독립적으로 검증하고 문제를 보고한다. 수정은 담당 구현 Agent에 다시 위임한다.
+- 상세 역할, handoff와 escalation 규칙은 `docs/engineering/agent-orchestration.md`를 따른다.
 
 ## 변경 규칙 (Change Rules)
 

@@ -22,6 +22,7 @@ Use progressive context rather than reading everything:
 - Product behavior: relevant `docs/product/` material, then affected implementation.
 - UI behavior: relevant product and `docs/design/` material, then affected frontend implementation.
 - Architecture, data, authentication, API, or deployment: relevant `docs/engineering/` material, then actual code and configuration.
+- Agent orchestration or role boundaries: `docs/engineering/agent-orchestration.md`, then the applicable definition under `.codex/agents/`.
 - Rationale for a consequential choice: relevant record under `docs/decisions/`, then the current implementation.
 
 If a referenced area or document does not exist, do not infer its contents. Inspect code and configuration and report any uncertainty that affects the task.
@@ -29,6 +30,8 @@ If a referenced area or document does not exist, do not infer its contents. Insp
 ## Source-of-Truth Boundaries
 
 - `AGENTS.md` is the repository operating guide and context router.
+- `docs/engineering/agent-orchestration.md` is the human-readable source of truth for orchestration roles, handoffs, and approval boundaries.
+- `.codex/config.toml` and `.codex/agents/` are the executable Codex multi-agent configuration. They reference domain knowledge rather than duplicating it.
 - `docs/` contains durable project knowledge.
 - Code and configuration are the final evidence of current implementation behavior.
 - A future task workspace may contain task-specific plans and execution records; no such repository structure is defined yet.
