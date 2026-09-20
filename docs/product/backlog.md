@@ -20,7 +20,7 @@
 - 고유 Slug는 최초 Publish 시 확정한다. 이후 Title 수정만으로 기존 Published Slug를 변경하지 않는다.
 - 동일한 Slug가 이미 존재하면 시스템이 고유한 Slug를 생성한다.
 - V1에서는 작성자의 수동 Slug 관리와 Redirect 관리를 제공하지 않는다.
-- Publish에는 비어 있지 않은 Title, Summary, Content와 유효한 고유 Slug가 필요하다. 임의의 최소 글자 수는 두지 않으며 Topics와 직접 지정하는 Cover Image는 선택 사항이다.
+- Publish에는 비어 있지 않은 Title, Summary, Content와 유효한 고유 Slug가 필요하다. 임의의 최소 글자 수는 두지 않으며 Topics와 Admin에서 파일을 업로드해 지정하는 Cover Image는 선택 사항이다.
 - Table of Contents는 Published Post의 Heading 구조를 기반으로 자동 생성한다. 구성할 Heading이 없으면 표시하지 않으며 글자 수 기준은 두지 않는다.
 - Production에서 실제 Performance를 측정하고 검증할 수 있어야 한다. V1 Product 단계에서는 임의의 정량 Quality Gate를 두지 않는다.
 
@@ -102,13 +102,13 @@
 
 **Related Requirements:** REQ-03, REQ-06, REQ-07
 
-**Current Evidence:** 현재 shared Post type, Admin editor, Public Post에 Cover Image field나 대표 이미지 우선순위가 없다.
+**Current Evidence:** 현재 shared Post type, Admin editor, Public Post에 Cover Image field나 대표 이미지 우선순위가 없으며 Admin에는 Cover Image 파일 업로드 기능도 없다.
 
-**Target Outcome:** Cover Image, 본문의 첫 번째 이미지, 시스템 Default Image 순서로 모든 Published Post의 대표 이미지를 일관되게 결정한다.
+**Target Outcome:** 작성자가 Admin에서 로컬 이미지 파일을 업로드해 선택 사항인 Cover Image로 지정할 수 있다. 작성자가 이미지 URL을 직접 제공하지 않아도 되며, Cover Image, 본문의 첫 번째 이미지, 시스템 Default Image 순서로 모든 Published Post의 대표 이미지를 일관되게 결정한다.
 
 **Why Needed:** Public 표시와 검색·링크 공유 정보에 사용할 대표 이미지가 현재 보장되지 않는다.
 
-**Dependencies / Notes:** 직접 지정하는 Cover Image는 Publish 필수 조건이 아니다. 이미지 입력·저장 방식은 이후 Design/Engineering 단계에서 결정한다. 결과는 BC-13에서 사용한다.
+**Dependencies / Notes:** 직접 지정하는 Cover Image는 Publish 필수 조건이 아니다. Storage provider, 저장 경로와 파일 처리 방식은 이후 Design/Engineering 단계에서 결정한다. 결과는 BC-13에서 사용한다.
 
 ## BC-07 Explicit Authoring and Post Lifecycle
 

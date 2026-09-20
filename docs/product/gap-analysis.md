@@ -28,7 +28,7 @@ Supabase의 실제 schema·RLS·RPC, 인증과 CRUD의 runtime 동작, Draft 직
 | Post summary | `Summary / Description` | shared `Post` type, editor, list에 독립 summary field가 없음 | `Missing` | summary data 및 관리/표시 없음 |
 | Post slug | `Slug`와 콘텐츠 고유 URL | 상세 URL이 numeric `id`를 사용하고 slug field가 없음 | `Missing` | slug data와 slug routing 없음 |
 | Post topics | `Topics`, category hierarchy 미사용 | `tags?: string[]`만 존재하고 topic contract는 없음; Post category는 없음 | `Partial` | `tags`와 Target Topics의 contract 및 discovery가 정립되지 않음 |
-| Cover image | `Cover Image` | shared type, admin editor, public post UI에 cover image field가 없음 | `Missing` | cover image data와 UI 없음 |
+| Cover image | Admin 파일 업로드로 지정하는 `Cover Image` | shared type, admin editor, public post UI에 cover image field와 파일 업로드 기능이 없음 | `Missing` | cover image data, 파일 업로드와 UI 없음 |
 | Markdown content | Markdown 기반 단일 content | Admin editor/preview와 public `react-markdown` rendering 존재 | `Satisfied` | 기본 Markdown pipeline은 존재 |
 | Post status | `Draft`, `Published` | type, admin selector, create/update에 두 상태가 존재 | `Satisfied` | 확인된 code-level gap 없음 |
 | Draft isolation | Draft를 URL/API/discovery에서 public 차단 | 목록·검색은 published filter 사용; 상세는 id만 조회; RLS는 미확인 | `Partial` | public detail code에 status 제한이 없고 server-side 차단은 검증 불가 |
@@ -172,16 +172,16 @@ Evidence:
 ### Target `Post` model의 핵심 field 일부가 없음
 
 Target:
-`Post`는 Title, Summary/Description, Slug, Topics, Cover Image, Markdown Content, Status를 가진다.
+`Post`는 Title, Summary/Description, Slug, Topics, Cover Image, Markdown Content, Status를 가진다. Author는 Admin에서 로컬 이미지 파일을 업로드해 선택 사항인 Cover Image로 지정하며 이미지 URL을 직접 제공하지 않는다.
 
 Current:
-현재 shared type은 title, content, author, timestamps, status, views, optional tags를 가진다. Summary/Description, Slug, Cover Image는 없다.
+현재 shared type은 title, content, author, timestamps, status, views, optional tags를 가진다. Summary/Description, Slug, Cover Image가 없으며 Admin에 Cover Image 파일 업로드 기능도 없다.
 
 Status:
 `Partial`
 
 Gap:
-Summary/Description, Slug, Cover Image가 confirmed missing이며 Topics는 tags로 부분 표현된다.
+Summary/Description, Slug, Cover Image와 Cover Image 파일 업로드가 confirmed missing이며 Topics는 tags로 부분 표현된다.
 
 Evidence:
 
@@ -660,7 +660,7 @@ Activities의 `category`는 활동 콘텐츠를 분류하는 field이며 `Post`�
 이 목록은 Gap Analysis 작성 당시의 Target 입력을 보존한다. 현재 Initial V1에서는 Featured Posts와 Home Topics를 제외하고 Recent Published Posts 중심 Home만 요구하며, Blog Topic discovery는 계속 Initial V1 범위다.
 
 - Home을 콘텐츠 발견 중심으로 정렬하고 Recent/Featured Posts와 Topics를 다루는 범위
-- `Post`의 Summary/Description, Slug, Cover Image 및 Topics model gap
+- `Post`의 Summary/Description, Slug, Cover Image, Cover Image 파일 업로드 및 Topics model gap
 - Public Topics discovery와 Admin Topic management gap
 - Search pagination 및 URL-based Pagination gap
 - 모든 public access/discovery boundary에서의 Draft isolation gap

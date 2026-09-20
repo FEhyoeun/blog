@@ -107,7 +107,7 @@ Published Post는 기술 콘텐츠를 읽는 데 필요한 Markdown 표현을 �
 
 ## REQ-06 Post Representative Image
 
-Published Post의 대표 이미지는 작성자가 지정한 Cover Image, 본문의 첫 번째 이미지, 시스템 Default Image 순서로 결정한다. 따라서 모든 Published Post에는 사용할 수 있는 대표 이미지가 존재해야 한다.
+Published Post의 대표 이미지는 작성자가 Admin에서 파일을 업로드해 지정한 Cover Image, 본문의 첫 번째 이미지, 시스템 Default Image 순서로 결정한다. 따라서 모든 Published Post에는 사용할 수 있는 대표 이미지가 존재해야 한다.
 
 ### Acceptance Criteria
 
@@ -125,6 +125,7 @@ Published Post의 대표 이미지는 작성자가 지정한 Cover Image, 본문
 
 - [ ] 인증된 작성자는 Admin에서 새 Markdown Post를 작성할 수 있다.
 - [ ] 인증된 작성자는 기존 Draft 또는 Published Post의 Title, Summary, Content, Topics와 Cover Image를 수정할 수 있다.
+- [ ] 인증된 작성자는 로컬 이미지 파일을 업로드해 Post의 Cover Image로 지정할 수 있으며, 이미지 URL을 직접 제공할 필요가 없다.
 - [ ] Title, Summary, Content 중 하나라도 비어 있거나 유효한 고유 Slug를 생성할 수 없으면 Publish할 수 없으며 충족하지 않은 조건을 확인할 수 있다.
 - [ ] Title, Summary, Content가 비어 있지 않고 유효한 고유 Slug를 생성할 수 있으면 Topics 또는 직접 지정한 Cover Image가 없어도 Publish할 수 있다.
 - [ ] 작성자가 Save Draft를 명시적으로 실행하면 현재 입력 내용이 Draft로 저장된다.

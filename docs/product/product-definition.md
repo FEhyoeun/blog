@@ -129,6 +129,7 @@ Admin은 Single-author CMS다.
 - Full Preview
 - Publish
 - Topic 관리
+- Cover Image 파일 업로드
 
 Editor는 Markdown 기반으로 유지한다. Notion-style Block Editor와 Rich Text Editor는 현재 범위에 포함하지 않는다.
 
@@ -136,7 +137,7 @@ Save Draft는 작성자의 명시적인 action이며 V1에서는 Autosave를 제
 
 Live Preview는 Admin Editor에서 현재 작성 중인 콘텐츠를 보여준다. Full Preview는 실제 Published Post의 reading experience에 최대한 가까운 경험을 제공한다. 두 Preview는 인증된 작성자만 사용할 수 있다.
 
-이미지 업로드 방식과 Preview의 구체적인 UX 및 implementation은 필요한 경우 이후 Design 또는 Engineering 단계에서 결정한다.
+작성자는 Admin에서 로컬 이미지 파일을 업로드해 선택 사항인 Cover Image로 지정할 수 있어야 하며, 이미지 URL을 직접 제공할 필요가 없다. Storage provider, 저장 경로, 파일 처리 정책과 Preview의 구체적인 UX 및 implementation은 필요한 경우 이후 Design 또는 Engineering 단계에서 결정한다.
 
 ## Discoverability
 
@@ -285,7 +286,7 @@ Harness Engineering을 보여주기 위해 불필요한 Product Feature를 추�
 
 다음 항목은 이 Product Definition에서 결정하지 않는다.
 
-- 이미지 업로드 방식
+- Cover Image 파일 업로드의 Storage provider, 저장 경로와 파일 처리 방식
 - Slug algorithm, collision suffix 형식, encoding 방식
 - Table of Contents의 heading depth, numbering, 위치, anchor 세부 동작
 - SEO/AEO의 구체적인 기술 구현
